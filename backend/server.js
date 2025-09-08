@@ -30,7 +30,22 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // === MIDDLEWARE GLOBAL ===
-app.use(cors()); // Mengizinkan request dari domain lain (frontend Anda)
+// Konfigurasi CORS yang lebih aman untuk produksi
+const whitelist = [
+    'https://kpi-accounting.onrender.com', // Ganti dengan URL frontend Anda
+    'http://127.0.0.1:5500', // Untuk development lokal
+    'http://localhost:5500' // Untuk development lokal
+];
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+};
+app.use(cors(corsOptions));
 // Konfigurasi Helmet untuk mengizinkan pemuatan gambar lintas-asal (cross-origin)
 app.use(
     helmet({
@@ -75,3 +90,4 @@ app.use(errorHandler); // Menangani semua error lainnya (500)
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
