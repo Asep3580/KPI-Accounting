@@ -1,0 +1,43 @@
+/* Custom styles untuk transisi dan tampilan yang lebih halus */
+
+/* 1. Peningkatan Maintainability: Gunakan CSS Custom Properties untuk nilai yang berulang */
+:root {
+    --font-primary: 'Inter', sans-serif;
+    --sidebar-bg: #145494; /* Warna biru yang ditetapkan */
+    --sidebar-active-bg: #3a88d5; /* Warna aktif yang disesuaikan untuk kontras */
+    --sidebar-active-text: #ffffff;
+    --animation-duration: 0.4s;
+}
+
+body {
+    /* Gunakan variabel yang sudah didefinisikan */
+    font-family: var(--font-primary);
+}
+
+.sidebar {
+    background-color: var(--sidebar-bg);
+    transition: transform 0.3s ease-in-out;
+}
+
+.content-section.active {
+    display: block;
+    /* 2. Peningkatan UX: Tambahkan animasi fade-in saat konten muncul */
+    animation: fadeIn var(--animation-duration) ease-in-out forwards;
+}
+
+.sidebar-link.active {
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-text);
+}
+
+/* Animasi untuk transisi konten yang lebih halus */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,0 +1,2142 @@
+
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi KPI Accounting</title>
+    <!-- Memuat Tailwind CSS dari CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat FullCalendar JS dari CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <!-- Memuat ikon dari Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Memuat SheetJS (XLSX) untuk membaca file Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- Memuat jsPDF dan html2canvas untuk fitur cetak PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Library untuk Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Menghubungkan ke file CSS eksternal -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 z-20 w-64 -translate-x-full md:relative md:translate-x-0 text-white flex flex-col">
+            <div>
+                <div class="flex items-center p-4 border-b border-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-briefcase text-indigo-400 flex-shrink-0"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    <h2 class="font-bold text-xl ml-3">KPI Accounting</h2>
+                </div>
+                <nav class="mt-6">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg hover:bg-gray-700 transition duration-200 active" data-target="dashboard" role="button">
+                                <i data-feather="home" class="w-5 h-5" aria-hidden="true"></i>
+                                <span class="ml-3">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg hover:bg-gray-700 transition duration-200" data-target="agenda">
+                                <i data-feather="book-open" class="w-5 h-5"></i>
+                                <span class="ml-3">Agenda Visit Audit</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg hover:bg-gray-700 transition duration-200" data-target="calendar">
+                                <i data-feather="calendar" class="w-5 h-5"></i>
+                                <span class="ml-3">Calendar</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg hover:bg-gray-700 transition duration-200" data-target="submit-report">
+                               <i data-feather="upload-cloud" class="w-5 h-5"></i>
+                                <span class="ml-3">Submit Report</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-200" data-target="reports">
+                               <i data-feather="file-text" class="w-5 h-5"></i>
+                                <span class="ml-3">Reports</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg hover:bg-gray-700 transition duration-200" data-target="settings">
+                                <i data-feather="settings" class="w-5 h-5"></i>
+                                <span class="ml-3">Settings</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link flex items-center py-2.5 px-4 rounded-lg hover:bg-gray-700 transition duration-200" data-target="sop-aplikasi">
+                                <i data-feather="help-circle" class="w-5 h-5"></i>
+                                <span class="ml-3">SOP Aplikasi</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- Logout Button -->
+            <!-- Tombol logout dipindahkan ke dropdown header -->
+        </aside>
+
+        <!-- Main Content -->
+            <main class="flex-1 flex flex-col h-screen min-w-0">
+                <header class="bg-white shadow-md p-4 flex justify-between items-center z-10">
+                <button id="menu-button" class="md:hidden text-gray-600">
+                    <i data-feather="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard</h1>
+                <div class="flex items-center space-x-4">
+                    <!-- User Dropdown Menu -->
+                    <div class="relative">
+                        <button id="user-menu-button" class="flex items-center space-x-1 focus:outline-none">
+                            <span id="user-name-display" class="text-sm font-medium text-gray-700 hidden sm:block">User</span>
+                            <i data-feather="chevron-down" class="w-4 h-4 text-gray-600"></i>
+                        </button>
+                        <div id="user-menu-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+                            <a href="#" id="change-password-button" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ganti Password</a>
+                            <a href="#" id="logout-button" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+                <div class="flex-1 overflow-y-auto p-6 md:p-8">
+                <!-- Konten Dashboard -->
+                <section id="dashboard" class="content-section">
+                    <!-- Dashboard Metrics -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                        <!-- Card 1: Terjadwal -->
+                        <a href="#" data-target="calendar" class="nav-trigger bg-white p-6 rounded-lg shadow-md flex items-center hover:shadow-lg transition-shadow duration-200">
+                            <div class="flex-shrink-0 bg-indigo-100 text-indigo-600 rounded-full p-3">
+                                <i data-feather="calendar" class="w-6 h-6"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-gray-500 font-medium">Audit Terjadwal</h4>
+                                <p id="metric-scheduled" class="text-3xl font-bold text-gray-800">0</p>
+                            </div>
+                        </a>
+                        <!-- Card 2: Selesai -->
+                        <a href="#" data-target="report-agenda" class="nav-trigger bg-white p-6 rounded-lg shadow-md flex items-center hover:shadow-lg transition-shadow duration-200">
+                            <div class="flex-shrink-0 bg-green-100 text-green-600 rounded-full p-3">
+                                <i data-feather="check-circle" class="w-6 h-6"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-gray-500 font-medium">Audit Selesai</h4>
+                                <p id="metric-completed" class="text-3xl font-bold text-gray-800">0</p>
+                            </div>
+                        </a>
+                        <!-- Card 3: Sedang Proses -->
+                        <a href="#" data-target="agenda" data-filter-status="Sedang Proses" class="nav-trigger bg-white p-6 rounded-lg shadow-md flex items-center hover:shadow-lg transition-shadow duration-200">
+                            <div class="flex-shrink-0 bg-yellow-100 text-yellow-600 rounded-full p-3">
+                                <i data-feather="activity" class="w-6 h-6"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-gray-500 font-medium">Audit Sedang Proses</h4>
+                                <p id="metric-in-progress" class="text-3xl font-bold text-gray-800">0</p>
+                            </div>
+                        </a>
+                    </div> 
+
+                    <!-- Grid untuk Chart dan Aktivitas -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+                        <!-- Kolom untuk Pie Chart -->
+                        <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Ringkasan Status Audit</h3>
+                            <div class="relative h-64 w-full mx-auto">
+                                <canvas id="audit-status-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Kolom untuk Aktivitas Terbaru -->
+                        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-800">Aktivitas Terbaru</h3>
+                            <ul id="recent-activity-list" class="mt-4 space-y-4">
+                                <!-- Aktivitas akan dirender di sini oleh script.js -->
+                                <li class="text-gray-500">Memuat aktivitas...</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Status Pengiriman Laporan -->
+                    <div class="mt-8 bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-800">Status Pengiriman Laporan</h3>
+                        </div>
+                        <!-- Filter Controls -->
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="filter-hotel" class="block text-sm font-medium text-gray-700">Hotel</label>
+                                <select id="filter-hotel" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <!-- Opsi akan diisi oleh JavaScript -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="filter-report-type" class="block text-sm font-medium text-gray-700">Tipe Laporan</label>
+                                <select id="filter-report-type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <!-- Opsi diisi oleh JavaScript -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="filter-status" class="block text-sm font-medium text-gray-700">Status</label>
+                                <select id="filter-status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">Semua Status</option>
+                                    <option value="Tepat Waktu">Tepat Waktu</option>
+                                    <option value="Menunggu">Menunggu</option>
+                                    <option value="Terlambat">Terlambat</option>
+                                    <option value="Processing Error">Error</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="min-w-full">
+                                <thead class="border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Hotel</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Nama Laporan</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Status</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Terakhir Submit</th>
+                                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Deadline Berikutnya</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-status-table-body">
+                                    <!-- Status rows will be injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Konten Agenda Visit Audit (Tabel) -->
+                <section id="agenda" class="content-section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Daftar Agenda Visit Audit</h2>
+                        <!-- Tombol ini akan mengarahkan ke tampilan kalender untuk memilih tanggal -->
+                        <button id="add-agenda-from-table-button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                            <i data-feather="plus" class="w-5 h-5 mr-2"></i>
+                            <span>Tambah Agenda</span>
+                        </button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Hotel</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Audit</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Auditor</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pelaksanaan</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="relative px-6 py-3">
+                                            <span class="sr-only">Aksi</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agenda-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr><td colspan="7" class="text-center p-4 text-gray-500">Memuat data agenda...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Konten Calendar -->
+                <section id="calendar" class="content-section hidden">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold mb-4">Calendar Agenda</h2>
+                        <!-- Container untuk FullCalendar -->
+                        <div id="calendar-container">
+                            <!-- Kalender akan dirender di sini oleh JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Konten Submit Report -->
+                <section id="submit-report" class="content-section hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Submit Report Income Audit Daily -->
+                        <a href="#" data-target="submit-income-audit" data-parent="submit-report" id="submit-income-audit-card" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-green-100 p-4 rounded-lg"><i data-feather="dollar-sign" class="w-8 h-8 text-green-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Income Audit Daily</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Submit laporan audit pendapatan harian.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Submit Report AR Aging weekly -->
+                        <a href="#" data-target="submit-ar-aging" data-parent="submit-report" id="submit-ar-aging-card" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-blue-100 p-4 rounded-lg"><i data-feather="user-check" class="w-8 h-8 text-blue-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">AR Aging Weekly</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Submit laporan umur piutang mingguan.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Submit report AP Aging weekly -->
+                        <a href="#" data-target="submit-ap-aging" data-parent="submit-report" id="submit-ap-aging-card" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-orange-100 p-4 rounded-lg"><i data-feather="credit-card" class="w-8 h-8 text-orange-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">AP Aging Weekly</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Submit laporan umur utang mingguan.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Submit Report SOH Inventory weekly -->
+                        <a href="#" data-target="submit-soh-inventory" data-parent="submit-report" id="submit-soh-card" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-purple-100 p-4 rounded-lg"><i data-feather="archive" class="w-8 h-8 text-purple-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">SOH Inventory Weekly</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Submit laporan stok opname mingguan.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Submit Data Service Charge Monthly -->
+                        <a href="#" data-target="submit-service-charge" data-parent="submit-report" id="submit-service-charge-card" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-teal-100 p-4 rounded-lg"><i data-feather="percent" class="w-8 h-8 text-teal-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Service Charge Monthly</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Submit data service charge bulanan.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Submit Data After Closing GL monthly -->
+                        <a href="#" data-target="submit-gl-closing" data-parent="submit-report" id="submit-gl-closing-card" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-gray-200 p-4 rounded-lg"><i data-feather="book" class="w-8 h-8 text-gray-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">After Closing GL Monthly</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Submit data setelah tutup buku GL.</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Konten Reports -->
+                <section id="reports" class="content-section hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Laporan Performa Hotel -->
+                        <a href="#" data-target="report-performance" data-parent="reports" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-yellow-100 p-4 rounded-lg"><i data-feather="bar-chart-2" class="w-8 h-8 text-yellow-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Performa Hotel</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Lihat grafik status pengiriman laporan per hotel.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Laporan Agenda -->
+                        <a href="#" data-target="report-agenda" data-parent="reports" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-indigo-100 p-4 rounded-lg"><i data-feather="book-open" class="w-8 h-8 text-indigo-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Laporan Hasil Audit</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Lihat riwayat dan hasil audit.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Laporan Income Audit Daily -->
+                        <a href="#" data-target="report-income-audit" data-parent="reports" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-green-100 p-4 rounded-lg"><i data-feather="dollar-sign" class="w-8 h-8 text-green-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Laporan Income Audit</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Lihat riwayat laporan pendapatan harian.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Laporan AR Aging weekly -->
+                        <a href="#" data-target="report-ar-aging" data-parent="reports" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-blue-100 p-4 rounded-lg"><i data-feather="user-check" class="w-8 h-8 text-blue-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Laporan AR Aging</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Lihat riwayat laporan umur piutang.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Laporan AP Aging weekly -->
+                        <a href="#" data-target="report-ap-aging" data-parent="reports" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-orange-100 p-4 rounded-lg"><i data-feather="credit-card" class="w-8 h-8 text-orange-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Laporan AP Aging</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Lihat riwayat laporan umur utang.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Laporan SOH Inventory weekly -->
+                        <a href="#" data-target="report-soh" data-parent="reports" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-purple-100 p-4 rounded-lg"><i data-feather="archive" class="w-8 h-8 text-purple-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Laporan SOH Inventory</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Lihat riwayat laporan stok opname.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Laporan Service Charge Monthly -->
+                        <a href="#" data-target="report-service-charge" data-parent="reports" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-teal-100 p-4 rounded-lg"><i data-feather="percent" class="w-8 h-8 text-teal-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Laporan Service Charge</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Lihat riwayat data service charge.</p>
+                                </div>
+                            </div>
+                        </a>
+                        <!-- Laporan After Closing GL monthly -->
+                        <a href="#" data-target="report-gl-closing" data-parent="reports" class="nav-trigger block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                            <div class="flex items-center h-full">
+                                <div class="bg-purple-100 p-4 rounded-lg"><i data-feather="trending-up" class="w-8 h-8 text-purple-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Laporan P&L (GL Closing)</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Lihat ringkasan profit & loss bulanan.</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Konten Settings -->
+                <section id="settings" class="content-section hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Kelola User Card -->
+                        <a href="#" data-target="user-management" data-parent="settings" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-indigo-100 p-4 rounded-lg"><i data-feather="users" class="w-8 h-8 text-indigo-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Kelola User</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Tambah, edit, atau hapus akun pengguna.</p>
+                                </div>
+                                <i data-feather="chevron-right" class="w-6 h-6 text-gray-400 ml-auto"></i>
+                            </div>
+                        </a>
+                        <!-- Kelola Hotel Card -->
+                        <a href="#" data-target="hotel-management" data-parent="settings" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-blue-100 p-4 rounded-lg"><i data-feather="archive" class="w-8 h-8 text-blue-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Kelola Hotel</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Tambah, edit, atau hapus data hotel dan alamat.</p>
+                                </div>
+                                <i data-feather="chevron-right" class="w-6 h-6 text-gray-400 ml-auto"></i>
+                            </div>
+                        </a>
+                        <!-- Kelola Tipe Audit Card -->
+                        <a href="#" data-target="audit-type-management" data-parent="settings" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-green-100 p-4 rounded-lg"><i data-feather="check-square" class="w-8 h-8 text-green-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Kelola Tipe Audit</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Atur jenis audit seperti Audit Rutin, Investigasi, dll.</p>
+                                </div>
+                                <i data-feather="chevron-right" class="w-6 h-6 text-gray-400 ml-auto"></i>
+                            </div>
+                        </a>
+                        <!-- Kelola Checklist Audit Card -->
+                        <a href="#" data-target="audit-checklist-management" data-parent="settings" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-orange-100 p-4 rounded-lg"><i data-feather="clipboard" class="w-8 h-8 text-orange-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Kelola Checklist Audit</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Atur checklist untuk Income, AR, Petty Cash, AP, dll.</p>
+                                </div>
+                                <i data-feather="chevron-right" class="w-6 h-6 text-gray-400 ml-auto"></i>
+                            </div>
+                        </a>
+                        <!-- Kelola Role Card -->
+                        <a href="#" data-target="role-management" data-parent="settings" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-purple-100 p-4 rounded-lg"><i data-feather="shield" class="w-8 h-8 text-purple-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Kelola Role</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Atur role Admin, Staff Audit, Staff Hotel, dan hak aksesnya.</p>
+                                </div>
+                                <i data-feather="chevron-right" class="w-6 h-6 text-gray-400 ml-auto"></i>
+                            </div>
+                        </a>
+                        <!-- Kelola Target Laporan Card -->
+                        <a href="#" data-target="report-target-management" data-parent="settings" class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 nav-trigger">
+                            <div class="flex items-center h-full">
+                                <div class="bg-teal-100 p-4 rounded-lg"><i data-feather="target" class="w-8 h-8 text-teal-600"></i></div>
+                                <div class="ml-5">
+                                    <h3 class="text-lg font-semibold text-gray-800">Kelola Target Laporan</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Tentukan batas tanggal untuk submit laporan.</p>
+                                </div>
+                                <i data-feather="chevron-right" class="w-6 h-6 text-gray-400 ml-auto"></i>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- == HALAMAN KONTEN MANAJEMEN (DARI MENU SETTINGS) == -->
+
+                <!-- HALAMAN PERFORMA HOTEL -->
+                <section id="report-performance" class="content-section hidden p-6">
+                    <button data-target="reports" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Laporan
+                    </button>
+                    <div class="bg-slate-800 p-6 rounded-xl shadow-lg shadow-cyan-500/10 ring-1 ring-slate-700">
+                        <h2 class="text-2xl font-bold text-white mb-4">Performa Pengiriman Laporan per Hotel</h2>
+                        <p class="text-slate-300 mb-6">Grafik ini menampilkan jumlah laporan berdasarkan status pengiriman untuk setiap hotel pada periode saat ini.</p>
+                        
+                        <!-- Container untuk Grafik -->
+                        <div class="relative h-[28rem] w-full mt-4">
+                            <canvas id="hotel-performance-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- Konten Kelola User -->
+                <section id="user-management" class="content-section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Manajemen Pengguna</h2>
+                        <button id="add-user-button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                            <i data-feather="plus" class="w-5 h-5 mr-2"></i>
+                            <span>Tambah Pengguna</span>
+                        </button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Lengkap</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Akses Hotel
+                                        </th>
+                                        <th scope="col" class="relative px-6 py-3">
+                                            <span class="sr-only">Aksi</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- Baris ini akan digantikan oleh JavaScript saat data dimuat -->
+                                    <tr><td colspan="6" class="text-center p-4 text-gray-500">Memuat data pengguna...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Konten Kelola Hotel -->
+                <section id="hotel-management" class="content-section hidden" data-menu="hotel-management">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Daftar Hotel</h2>
+                        <button id="add-hotel-button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                            <i data-feather="plus" class="w-5 h-5 mr-2"></i>
+                            <span>Tambah Hotel</span>
+                        </button>
+                    </div>
+
+                    <!-- Tabel Hotel -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Hotel</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
+                                    <th scope="col" class="relative px-6 py-3">
+                                        <span class="sr-only">Aksi</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="hotel-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Data hotel akan dimuat di sini oleh JavaScript -->
+                                    <tr><td colspan="3" class="text-center p-4 text-gray-500">Memuat data hotel...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Konten Kelola Tipe Audit -->
+                <section id="audit-type-management" class="content-section hidden" data-menu="audit-type-management">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Manajemen Tipe Audit</h2>
+                        <button id="add-audit-type-button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                            <i data-feather="plus" class="w-5 h-5 mr-2"></i>
+                            <span>Tambah Tipe Audit</span>
+                        </button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Tipe Audit</th>
+                                        <th scope="col" class="relative px-6 py-3">
+                                            <span class="sr-only">Aksi</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-type-table-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- Data akan dimuat di sini oleh JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Konten Kelola Checklist Audit -->
+                <section id="audit-checklist-management" class="p-6 content-section hidden" data-menu="audit-checklist-management">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Manajemen Checklist Audit</h2>
+
+                    <!-- Langkah 1: Pilih Tipe Audit -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <label for="checklist-audit-type-selector" class="block text-sm font-medium text-gray-700 mb-2">Pilih Tipe Audit untuk Dikelola:</label>
+                        <select id="checklist-audit-type-selector" class="block w-full max-w-md p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">-- Memuat Tipe Audit --</option>
+                        </select>
+                    </div>
+
+                    <!-- Langkah 2: Tampilkan Checklist (muncul setelah tipe audit dipilih) -->
+                    <div id="checklist-container" class="mt-6 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 id="checklist-header-title" class="text-xl font-semibold text-gray-700">Checklist untuk...</h3>
+                            <button id="add-checklist-item-button" class="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center">
+                                <i data-feather="plus" class="w-5 h-5 mr-2"></i>
+                                <span>Tambah Item</span>
+                            </button>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-sm overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Kategori</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Checklist</th>
+                                        <th scope="col" class="relative px-6 py-3">
+                                            <span class="sr-only">Aksi</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="checklist-table-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- Data checklist akan dimuat di sini -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Konten Kelola Target Laporan -->
+                <section id="report-target-management" class="content-section hidden" data-menu="report-target-management">
+                    <button data-target="settings" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pengaturan
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Manajemen Target Laporan</h2>
+                    <p class="text-gray-600 mb-6 max-w-3xl">Atur batas waktu (deadline) untuk setiap jenis laporan. Pengaturan ini akan digunakan untuk notifikasi dan pemantauan keterlambatan.</p>
+                    <div id="report-target-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="text-center col-span-full p-10 text-gray-500">Memuat pengaturan target...</div>
+                    </div>
+                </section>
+
+                <!-- Konten Kelola Role -->
+                <section id="role-management" class="content-section hidden" data-menu="role-management">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Manajemen Peran (Role)</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Peran</th>
+                                        <th scope="col" class="relative px-6 py-3">
+                                            <span class="sr-only">Aksi</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="role-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr><td colspan="2" class="text-center p-4 text-gray-500">Memuat data peran...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- == HALAMAN KONTEN SUBMIT (DARI MENU SUBMIT REPORT) == -->
+                <!-- Contoh untuk satu halaman, bisa diduplikasi untuk yang lain -->
+                <section id="submit-income-audit" class="content-section hidden">
+                    <button data-target="submit-report" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Submit Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Laporan Income Audit Harian</h2>
+                        <p class="text-gray-600 mb-6">Unggah file Excel yang berisi data laporan untuk satu atau beberapa hari. Sistem akan membaca tanggal dari kolom 'DATE' di dalam file Anda.</p>
+                        
+                        <!-- Kontrol Hotel dan Upload -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
+                            <div>
+                                <label for="income-audit-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                <select id="income-audit-hotel-selector" name="hotel_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">-- Silakan pilih hotel --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4 mb-6">
+                            <label for="excel-upload" id="excel-upload-label" class="cursor-pointer inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 opacity-50 cursor-not-allowed">
+                                <i data-feather="upload" class="w-5 h-5 mr-2"></i>
+                                Pilih File Excel
+                            </label>
+                            <input type="file" id="excel-upload" class="hidden" accept=".xlsx, .xls, .csv" disabled>
+                            <span id="excel-file-name" class="text-gray-500">Pilih hotel terlebih dahulu</span>
+                        </div>
+
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">DATE</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Room Available</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Room OOO</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Room Com &amp; HU</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Room Sold</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Number of Guest</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">%Occp</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">ARR</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">RevPAR</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Lodging Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Others Room Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Room Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Breakfast Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Restaurant Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Room Service</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Banquet Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">F&amp;B Others</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">F&amp;B Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Others Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Total Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Service</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Tax</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Gross Revenue</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Shared Payable</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Deposit Reservation</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Cash FO</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Cash Outlet</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Bank Transfer</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">QRIS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Credit/Debit Card</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">City Ledger</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Total Settlement</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">GAB</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">BALANCE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="income-audit-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="35" class="px-6 py-12 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i data-feather="file-text" class="w-12 h-12 text-gray-400 mb-4"></i>
+                                                <span class="font-medium">Data Laporan Kosong</span>
+                                                <span class="text-sm">Silakan unggah file Excel untuk memulai.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="income-audit-table-foot" class="bg-gray-100 font-bold">
+                                    <!-- Baris total akan disuntikkan di sini oleh JavaScript -->
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Tombol Aksi -->
+                        <div class="mt-6 flex justify-end space-x-4">
+                            <button id="download-excel-button" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i data-feather="download" class="w-5 h-5 mr-2"></i>
+                                Unduh Template
+                            </button>
+                            <button id="submit-income-audit-button" disabled class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i data-feather="save" class="w-5 h-5 mr-2"></i>
+                                Simpan ke Database
+                            </button>
+                        </div>
+
+                        <!-- Area Berbahaya: Hapus Laporan -->
+                        <div class="mt-8 border-t-2 border-red-200 pt-6" data-permission="delete:reports">
+                            <h3 class="text-xl font-semibold text-red-700 mb-4">Area Berbahaya: Hapus Laporan</h3>
+                            <p class="text-gray-600 mb-6">Gunakan fitur ini untuk menghapus semua data laporan Income Audit yang sudah tersimpan untuk hotel dan rentang tanggal tertentu. Tindakan ini tidak dapat diurungkan.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end p-4 bg-red-50 rounded-lg">
+                                <div>
+                                    <label for="delete-income-audit-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                    <select id="delete-income-audit-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                                        <option value="">-- Pilih hotel --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="delete-income-audit-start-date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                    <input type="date" id="delete-income-audit-start-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                                </div>
+                                <div>
+                                    <label for="delete-income-audit-end-date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                    <input type="date" id="delete-income-audit-end-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                                </div>
+                                <div>
+                                    <button id="delete-income-audit-button" class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        <i data-feather="trash-2" class="w-5 h-5 mr-2"></i>
+                                        Hapus Laporan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- == HALAMAN KONTEN LAPORAN (DARI MENU REPORTS) == -->
+                <section id="report-agenda" class="content-section hidden p-6">
+                    <button data-target="reports" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 class="text-xl font-semibold mb-4">Laporan Hasil Audit</h2>
+                        
+                        <!-- Table Container -->
+                        <div class="flex flex-col">
+                            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Hotel</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Audit</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Selesai</th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Auditor</th>
+                                                    <th scope="col" class="relative px-6 py-3">
+                                                        <span class="sr-only">Aksi</span>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="report-table-body" class="bg-white divide-y divide-gray-200">
+                                                <tr><td colspan="5" class="text-center p-4 text-gray-500">Memuat laporan...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- == HALAMAN KONTEN SUBMIT (LANJUTAN) == -->
+                <section id="submit-ar-aging" class="content-section hidden p-6">
+                    <button data-target="submit-report" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Submit Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Laporan AR Aging Mingguan</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="ar-aging-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                <select id="ar-aging-hotel-selector" name="hotel_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">-- Silakan pilih hotel --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="ar-aging-date-selector" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Laporan</label>
+                                <input type="date" id="ar-aging-date-selector" name="report_date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md disabled:bg-gray-100 disabled:cursor-not-allowed" disabled>
+                            </div>
+                        </div>
+
+                        <p class="text-gray-600 mb-6">Unggah file Excel laporan AR Aging untuk menampilkan data di tabel di bawah ini. Pastikan format file sesuai dengan template.</p>
+                        
+                        <div class="flex items-center space-x-4 mb-6">
+                            <label for="ar-aging-excel-upload" class="cursor-pointer inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i data-feather="upload" class="w-5 h-5 mr-2"></i>
+                                Pilih File Excel
+                            </label>
+                            <input type="file" id="ar-aging-excel-upload" class="hidden" accept=".xlsx, .xls, .csv">
+                            <span id="ar-aging-excel-file-name" class="text-gray-500">Tidak ada file yang dipilih</span>
+                            <button id="submit-ar-aging-button" class="ml-2 cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                                <i data-feather="save" class="w-5 h-5 mr-2"></i>
+                                Simpan ke Database
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">DATE</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">CUSTOMER NAME</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">OUTSTANDING</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">1 - 30 DAYS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">31 - 60 DAYS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">61 - 90 DAYS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">OVER 90 DAYS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">REMARK</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ar-aging-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i data-feather="file-text" class="w-12 h-12 text-gray-400 mb-4"></i>
+                                                <span class="font-medium">Data Laporan Kosong</span>
+                                                <span class="text-sm">Silakan unggah file Excel untuk memulai.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="ar-aging-table-foot" class="bg-gray-100 font-bold">
+                                    <!-- Baris total akan disuntikkan di sini oleh JavaScript -->
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Area Berbahaya: Hapus Laporan -->
+                        <div class="mt-8 border-t-2 border-red-200 pt-6" data-permission="delete:reports">
+                            <h3 class="text-xl font-semibold text-red-700 mb-4">Area Berbahaya: Hapus Laporan</h3>
+                            <p class="text-gray-600 mb-6">Gunakan fitur ini untuk menghapus semua data laporan AR Aging yang sudah tersimpan untuk hotel dan tanggal tertentu. Tindakan ini tidak dapat diurungkan.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end p-4 bg-red-50 rounded-lg">
+                                <div>
+                                    <label for="delete-ar-aging-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                    <select id="delete-ar-aging-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                                        <option value="">-- Pilih hotel --</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="delete-ar-aging-date-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Tanggal Laporan</label>
+                                    <input type="date" id="delete-ar-aging-date-selector" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                                </div>
+                                <div>
+                                    <button id="delete-ar-aging-button" class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        <i data-feather="trash-2" class="w-5 h-5 mr-2"></i>
+                                        Hapus Laporan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="submit-ap-aging" class="content-section hidden p-6">
+                    <button data-target="submit-report" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Submit Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Laporan AP Aging Mingguan</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="ap-aging-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                <select id="ap-aging-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"></select>
+                            </div>
+                            <div>
+                                <label for="ap-aging-date-selector" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Laporan</label>
+                                <input type="date" id="ap-aging-date-selector" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" disabled>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-6">Unggah file Excel laporan AP Aging untuk menampilkan data di tabel di bawah ini.</p>
+                        <div class="flex items-center space-x-4 mb-6">
+                            <label for="ap-aging-excel-upload" class="cursor-pointer inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 opacity-50 cursor-not-allowed">
+                                <i data-feather="upload" class="w-5 h-5 mr-2"></i> Pilih File Excel
+                            </label>
+                            <input type="file" id="ap-aging-excel-upload" class="hidden" accept=".xlsx, .xls, .csv" disabled>
+                            <span id="ap-aging-excel-file-name" class="text-gray-500">Pilih hotel dan tanggal terlebih dahulu</span>
+                            <button id="submit-ap-aging-button" class="ml-auto cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" disabled>
+                                <i data-feather="save" class="w-5 h-5 mr-2"></i> Simpan ke Database
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">DATE</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">CUSTOMER NAME</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">OUTSTANDING</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">1 - 30 DAYS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">31 - 60 DAYS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">61 - 90 DAYS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">OVER 90 DAYS</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">REMARK</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ap-aging-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i data-feather="file-text" class="w-12 h-12 text-gray-400 mb-4"></i>
+                                                <span class="font-medium">Data Laporan Kosong</span>
+                                                <span class="text-sm">Silakan unggah file Excel untuk memulai.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="ap-aging-table-foot" class="bg-gray-100 font-bold"></tfoot>
+                            </table>
+                        </div>
+                        <div class="mt-8 border-t-2 border-red-200 pt-6" data-permission="delete:reports">
+                            <h3 class="text-xl font-semibold text-red-700 mb-4">Area Berbahaya: Hapus Laporan</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end p-4 bg-red-50 rounded-lg">
+                                <div>
+                                    <label for="delete-ap-aging-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                    <select id="delete-ap-aging-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"></select>
+                                </div>
+                                <div>
+                                    <label for="delete-ap-aging-date-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Tanggal Laporan</label>
+                                    <input type="date" id="delete-ap-aging-date-selector" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                                </div>
+                                <div>
+                                    <button id="delete-ap-aging-button" class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        <i data-feather="trash-2" class="w-5 h-5 mr-2"></i> Hapus Laporan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="submit-service-charge" class="content-section hidden p-6">
+                    <button data-target="submit-report" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Submit Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Submit Data Service Charge Bulanan</h2>
+                        <p class="text-gray-600 mb-6">Isi formulir di bawah ini untuk mengirimkan data service charge bulanan. Semua kolom angka diisi dengan nilai nominal.</p>
+                        
+                        <form id="service-charge-form">
+                            <!-- Hotel dan Tanggal -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label for="sc-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                    <select id="sc-hotel-selector" name="hotel_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"></select>
+                                </div>
+                                <div>
+                                    <label for="sc-date-selector" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Laporan</label>
+                                    <input type="date" id="sc-date-selector" name="report_date" required class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                </div>
+                            </div>
+
+                            <!-- Cash Collection -->
+                            <div class="border-t border-gray-200 pt-6">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">Cash Collection</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <label for="sc-cash-fo" class="block text-sm font-medium text-gray-700">Cash FO</label>
+                                        <input type="number" id="sc-cash-fo" name="cash_fo" value="0" step="0.01" required class="mt-1 block w-full border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="sc-cash-fb" class="block text-sm font-medium text-gray-700">Cash F&B</label>
+                                        <input type="number" id="sc-cash-fb" name="cash_fb" value="0" step="0.01" required class="mt-1 block w-full border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="sc-cash-short-over" class="block text-sm font-medium text-gray-700">Cash Short/Over</label>
+                                        <input type="number" id="sc-cash-short-over" name="cash_short_over" value="0" step="0.01" required class="mt-1 block w-full border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div class="md:col-span-3 mt-4">
+                                        <label class="block text-sm font-medium text-gray-700">Total Cash Collection</label>
+                                        <span id="sc-total-cash-collection" class="mt-1 block w-full text-lg font-semibold text-gray-900">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AR Collection -->
+                            <div class="border-t border-gray-200 pt-6 mt-6">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">AR Collection</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="sc-bank-in-ar" class="block text-sm font-medium text-gray-700">Bank In AR Payment</label>
+                                        <input type="number" id="sc-bank-in-ar" name="bank_in_ar_payment" value="0" step="0.01" required class="mt-1 block w-full border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div>
+                                        <label for="sc-used-ar-deposit" class="block text-sm font-medium text-gray-700">Used AR Deposit</label>
+                                        <input type="number" id="sc-used-ar-deposit" name="used_ar_deposit" value="0" step="0.01" required class="mt-1 block w-full border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div class="md:col-span-2 mt-4">
+                                        <label class="block text-sm font-medium text-gray-700">Total AR Collection</label>
+                                        <span id="sc-total-ar-collection" class="mt-1 block w-full text-lg font-semibold text-gray-900">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Catatan dan Link -->
+                            <div class="border-t border-gray-200 pt-6 mt-6">
+                                <div class="grid grid-cols-1 gap-6">
+                                    <div>
+                                        <label for="sc-notes" class="block text-sm font-medium text-gray-700">Catatan</label>
+                                        <textarea id="sc-notes" name="notes" rows="3" class="mt-1 block w-full border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="sc-gdrive-link" class="block text-sm font-medium text-gray-700">Link Google Drive (Dokumen Pendukung)</label>
+                                        <input type="url" id="sc-gdrive-link" name="gdrive_link" placeholder="https://docs.google.com/..." class="mt-1 block w-full border-gray-400 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    </div>
+                                    <div class="md:col-span-1 mt-4">
+                                        <label class="block text-sm font-medium text-gray-700">Total Collection Keseluruhan</label>
+                                        <span id="sc-total-collection-overall" class="mt-1 block w-full text-xl font-bold text-indigo-700">0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Aksi -->
+                            <div class="mt-8 flex justify-end">
+                                <button type="submit" id="submit-sc-button" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i data-feather="save" class="w-5 h-5 mr-2"></i>
+                                    Simpan Data
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+                <section id="submit-gl-closing" class="content-section hidden p-6">
+                    <button data-target="submit-report" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Submit Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Submit Data After Closing GL Bulanan</h2>
+                        <p class="text-gray-600 mb-6">Isi formulir di bawah ini untuk mengirimkan data profit & loss setelah tutup buku (GL). Kolom kalkulasi akan terisi otomatis.</p>
+                        
+                        <form id="gl-closing-form">
+                            <!-- Hotel dan Tanggal -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label for="gl-closing-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                    <select id="gl-closing-hotel-selector" name="hotel_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                        <!-- Opsi akan diisi oleh JavaScript -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="gl-closing-date-selector" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Laporan (Akhir Bulan)</label>
+                                    <input type="date" id="gl-closing-date-selector" name="report_date" required class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <!-- Kolom Actual -->
+                                <div class="border border-gray-200 rounded-lg p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Actual Profit (Loss)</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="gl-actual-revenue" class="block text-sm font-medium text-gray-700">Actual Revenue</label>
+                                            <input type="number" id="gl-actual-revenue" name="actual_revenue" step="0.01" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        </div>
+                                        <div>
+                                            <label for="gl-actual-expenses" class="block text-sm font-medium text-gray-700">Actual Expenses</label>
+                                            <input type="number" id="gl-actual-expenses" name="actual_expenses" step="0.01" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        </div>
+                                        <div class="pt-2">
+                                            <label class="block text-sm font-medium text-gray-500">Actual GOP (Gross Operating Profit)</label>
+                                            <p id="gl-actual-gop" class="mt-1 text-lg font-semibold text-gray-900">Rp 0.00</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-500">Ratio %GOP</label>
+                                            <p id="gl-actual-gop-ratio" class="mt-1 text-lg font-semibold text-gray-900">0.00 %</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Kolom Budget -->
+                                <div class="border border-gray-200 rounded-lg p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Budget Profit (Loss)</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="gl-budget-revenue" class="block text-sm font-medium text-gray-700">Budget Revenue</label>
+                                            <input type="number" id="gl-budget-revenue" name="budget_revenue" step="0.01" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        </div>
+                                        <div>
+                                            <label for="gl-budget-expenses" class="block text-sm font-medium text-gray-700">Budget Expenses</label>
+                                            <input type="number" id="gl-budget-expenses" name="budget_expenses" step="0.01" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                        </div>
+                                        <div class="pt-2">
+                                            <label class="block text-sm font-medium text-gray-500">Budget GOP (Gross Operating Profit)</label>
+                                            <p id="gl-budget-gop" class="mt-1 text-lg font-semibold text-gray-900">Rp 0.00</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-500">Budget Ratio %GOP</label>
+                                            <p id="gl-budget-gop-ratio" class="mt-1 text-lg font-semibold text-gray-900">0.00 %</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Link Google Drive -->
+                            <div class="mt-6">
+                                <label for="gl-gdrive-link" class="block text-sm font-medium text-gray-700">Dokumen Data After Closing (Link Google Drive)</label>
+                                <input type="url" id="gl-gdrive-link" name="gdrive_link" placeholder="https://docs.google.com/..." class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+
+                            <!-- Tombol Aksi -->
+                            <div class="mt-8 flex justify-end">
+                                <button type="submit" id="submit-gl-closing-button" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i data-feather="save" class="w-5 h-5 mr-2"></i>
+                                    Simpan Data
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="report-income-audit" class="content-section hidden p-6">
+                    <button data-target="reports" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Ringkasan Laporan Income Audit</h2>
+                        <p class="text-gray-600 mb-6">Pilih tanggal untuk melihat ringkasan performa harian, bulanan (MTD), dan tahunan (YTD) untuk setiap hotel.</p>
+                
+                        <!-- Filter Controls -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
+                            <div>
+                                <label for="report-ia-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Hotel</label>
+                                <select id="report-ia-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">Semua Hotel</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="report-ia-start-date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                <input type="date" id="report-ia-start-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <label for="report-ia-end-date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                <input type="date" id="report-ia-end-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="report-ia-filter-button" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i data-feather="filter" class="w-5 h-5 mr-2"></i>
+                                    Tampilkan
+                                </button>
+                                <button id="report-ia-download-button" disabled class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                                    <i data-feather="download" class="w-4 h-4 mr-2"></i>
+                                    Unduh
+                                </button>
+                            </div>
+                        </div>
+                
+                        <!-- Data Table -->
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th rowspan="2" class="sticky left-0 bg-gray-100 z-10 px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle border-r min-w-48">Hotel</th>
+                                        <th colspan="8" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-l border-r">Today</th>
+                                        <th colspan="8" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-r">Period</th>
+                                        <th colspan="8" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Year to Date</th>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <!-- Today -->
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-l">Room Avail</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Room Sold</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">% Occp</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ARR</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Room Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">F&B Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Other Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r">Total Rev</th>
+                                        <!-- MTD -->
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Room Avail</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Room Sold</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">% Occp</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ARR</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Room Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">F&B Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Other Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r">Total Rev</th>
+                                        <!-- YTD -->
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Room Avail</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Room Sold</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">% Occp</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ARR</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Room Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">F&B Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Other Rev</th>
+                                        <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Rev</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-ia-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="25" class="px-6 py-12 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i data-feather="search" class="w-12 h-12 text-gray-400 mb-4"></i>
+                                                <span class="font-medium">Silakan pilih tanggal dan klik "Tampilkan" untuk memuat data.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="report-ia-table-foot" class="bg-gray-100 font-semibold">
+                                    <!-- Totals will be rendered here by JS -->
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <!-- == HALAMAN KONTEN LAPORAN (LANJUTAN) == -->
+                <section id="report-gl-closing" class="content-section hidden p-6">
+                    <button data-target="reports" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Laporan Profit & Loss (GL Closing)</h2>
+                        <p class="text-gray-600 mb-6">Gunakan filter di bawah untuk melihat ringkasan profit & loss bulanan dari berbagai hotel.</p>
+                
+                        <!-- Filter Controls -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-end">
+                            <div>
+                                <label for="report-gl-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Hotel</label>
+                                <select id="report-gl-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="report-gl-start-date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                <input type="date" id="report-gl-start-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <label for="report-gl-end-date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                <input type="date" id="report-gl-end-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="report-gl-filter-button" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i data-feather="filter" class="w-4 h-4 mr-2"></i>
+                                    Filter
+                                </button>
+                                <button id="report-gl-download-button" disabled class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                                    <i data-feather="download" class="w-4 h-4 mr-2"></i>
+                                    Unduh
+                                </button>
+                            </div>
+                        </div>
+                
+                        <!-- Data Table -->
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th rowspan="2" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">Hotel</th>
+                                        <th rowspan="2" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">Tanggal</th>
+                                        <th colspan="4" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-l">Actual</th>
+                                        <th colspan="4" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-l">Budget</th>
+                                        <th rowspan="2" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider align-middle border-l">Dokumen</th>
+                                        <th rowspan="2" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider align-middle border-l">Aksi</th>
+                                    </tr>
+                                    <tr>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-l">Revenue</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">GOP</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">%GOP</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-l">Revenue</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">GOP</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">%GOP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-gl-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="12" class="px-6 py-12 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i data-feather="search" class="w-12 h-12 text-gray-400 mb-4"></i>
+                                                <span class="font-medium">Silakan gunakan filter untuk menampilkan data.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="report-gl-table-foot" class="bg-gray-50 font-semibold">
+                                    <!-- Totals will be rendered here by JS -->
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <section id="report-ar-aging" class="content-section hidden p-6">
+                    <button data-target="reports" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Laporan AR Aging</h2>
+                        
+                        <!-- Filter Controls -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
+                            <div>
+                                <label for="report-ar-aging-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Hotel</label>
+                                <select id="report-ar-aging-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">Semua Hotel</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="report-ar-aging-start-date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                <input type="date" id="report-ar-aging-start-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <label for="report-ar-aging-end-date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                <input type="date" id="report-ar-aging-end-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <button id="report-ar-aging-filter-button" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i data-feather="search" class="w-5 h-5 mr-2"></i>
+                                    Tampilkan
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Results Table -->
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Hotel</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Tanggal Laporan</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Customer Name</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Outstanding</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">1 - 30 Days</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">31 - 60 Days</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">61 - 90 Days</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Over 90 Days</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Remark</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-ar-aging-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                            <i data-feather="info" class="w-12 h-12 text-gray-400 mb-4 mx-auto"></i>
+                                            <p class="font-medium">Pilih filter di atas dan klik "Tampilkan" untuk melihat data.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="report-ar-aging-table-foot" class="bg-gray-100 font-bold">
+                                    <!-- Baris total akan disuntikkan di sini oleh JavaScript -->
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Tombol Aksi -->
+                        <div class="mt-6 flex justify-end">
+                            <button id="report-ar-aging-download-button" disabled class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i data-feather="download" class="w-5 h-5 mr-2"></i>
+                                Unduh Excel
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                <section id="report-ap-aging" class="content-section hidden p-6">
+                    <button data-target="reports" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Laporan AP Aging</h2>
+                        
+                        <!-- Filter Controls -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
+                            <div>
+                                <label for="report-ap-aging-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Hotel</label>
+                                <select id="report-ap-aging-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">Semua Hotel</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="report-ap-aging-start-date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                <input type="date" id="report-ap-aging-start-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <label for="report-ap-aging-end-date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                <input type="date" id="report-ap-aging-end-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <button id="report-ap-aging-filter-button" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i data-feather="search" class="w-5 h-5 mr-2"></i>
+                                    Tampilkan
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Results Table -->
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Hotel</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Tanggal Laporan</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Nama Supplier</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Outstanding</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">1 - 30 Days</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">31 - 60 Days</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">61 - 90 Days</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Over 90 Days</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Remark</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-ap-aging-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                            <i data-feather="info" class="w-12 h-12 text-gray-400 mb-4 mx-auto"></i>
+                                            <p class="font-medium">Pilih filter di atas dan klik "Tampilkan" untuk melihat data.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="report-ap-aging-table-foot" class="bg-gray-100 font-bold">
+                                    <!-- Baris total akan disuntikkan di sini oleh JavaScript -->
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Tombol Aksi -->
+                        <div class="mt-6 flex justify-end">
+                            <button id="report-ap-aging-download-button" disabled class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i data-feather="download" class="w-5 h-5 mr-2"></i>
+                                Unduh Excel
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                <!-- Submit SOH Inventory Report Section -->
+                <section id="submit-soh-inventory" class="content-section hidden p-6">
+                    <button data-target="submit-report" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Submit Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Submit Laporan SOH Inventory Mingguan</h2>
+                        <p class="text-gray-600 mb-6">Pilih hotel dan tanggal laporan, lalu unggah file Excel untuk menampilkan data. Pastikan format file sesuai dengan template.</p>
+                        
+                        <!-- Kontrol Hotel dan Tanggal -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-end">
+                            <div>
+                                <label for="soh-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                <select id="soh-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"></select>
+                            </div>
+                            <div>
+                                <label for="soh-date-selector" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Laporan</label>
+                                <input type="date" id="soh-date-selector" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" disabled>
+                            </div>
+                        </div>
+
+                        <!-- Kontrol Upload File -->
+                        <div class="flex items-center space-x-4 mb-6">
+                            <label for="soh-excel-upload" class="cursor-pointer inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i data-feather="upload" class="w-5 h-5 mr-2"></i>
+                                Pilih File Excel
+                            </label>
+                            <input type="file" id="soh-excel-upload" class="hidden" accept=".xlsx, .xls, .csv">
+                            <span id="soh-excel-file-name" class="text-gray-500">Tidak ada file yang dipilih</span>
+                        </div>
+
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Date</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Storage</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Article</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Description</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Unit</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actual Qty</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actual Value</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Act P-Price</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Avrg Price</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Sub Group</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="soh-table-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- Data akan dirender di sini oleh JavaScript -->
+                                </tbody>
+                                <tfoot id="soh-table-foot" class="bg-gray-50 font-semibold">
+                                    <!-- Total akan dirender di sini jika diperlukan -->
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Tombol Aksi -->
+                        <div class="mt-6 flex justify-end">
+                            <button id="submit-soh-button" disabled class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i data-feather="save" class="w-5 h-5 mr-2"></i>
+                                Simpan ke Database
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Delete SOH Inventory Report Section -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Hapus Laporan SOH Inventory</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                            <div>
+                                <label for="delete-soh-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Pilih Hotel</label>
+                                <select id="delete-soh-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"></select>
+                            </div>
+                            <div>
+                                <label for="delete-soh-date-selector" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Laporan</label>
+                                <input type="date" id="delete-soh-date-selector" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <button id="delete-soh-button" class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    <i data-feather="trash-2" class="w-5 h-5 mr-2"></i>
+                                    Hapus Laporan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="report-soh" class="content-section hidden p-6">
+                    <button data-target="reports" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Laporan SOH Inventory (Ringkasan)</h2>
+                        <p class="text-gray-600 mb-6">Menampilkan ringkasan total nilai inventaris berdasarkan sub-grup. Klik pada baris untuk melihat detail.</p>
+                
+                        <!-- Filter Controls -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
+                            <div>
+                                <label for="report-soh-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Hotel</label>
+                                <select id="report-soh-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">Semua Hotel</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="report-soh-start-date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                <input type="date" id="report-soh-start-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <label for="report-soh-end-date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                <input type="date" id="report-soh-end-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="report-soh-filter-button" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i data-feather="search" class="w-5 h-5 mr-2"></i>
+                                    Tampilkan
+                                </button>
+                                <button id="report-soh-download-button" disabled class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                                    <i data-feather="download" class="w-4 h-4 mr-2"></i>
+                                    Unduh
+                                </button>
+                            </div>
+                        </div>
+                
+                        <!-- Summary Table -->
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Hotel</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Laporan</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Food</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Beverage</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Material</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Keseluruhan</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-soh-summary-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i data-feather="info" class="w-12 h-12 text-gray-400 mb-4"></i>
+                                                <span class="font-medium">Gunakan filter untuk menampilkan ringkasan laporan.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <section id="report-service-charge" class="content-section hidden">
+                    <button data-target="reports" class="nav-trigger mb-6 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 group">
+                        <i data-feather="arrow-left" class="w-4 h-4 mr-2 transition-transform duration-200 group-hover:-translate-x-1"></i>
+                        Kembali ke Pilihan Laporan
+                    </button>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Laporan Service Charge</h2>
+                        <p class="text-gray-600 mb-6">Gunakan filter di bawah untuk melihat riwayat data service charge yang telah disubmit.</p>
+                
+                        <!-- Filter Controls -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-end">
+                            <div>
+                                <label for="report-sc-hotel-selector" class="block text-sm font-medium text-gray-700 mb-1">Hotel</label>
+                                <select id="report-sc-hotel-selector" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="report-sc-start-date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                <input type="date" id="report-sc-start-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div>
+                                <label for="report-sc-end-date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                <input type="date" id="report-sc-end-date" class="mt-1 block w-full pl-3 pr-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="report-sc-filter-button" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i data-feather="filter" class="w-4 h-4 mr-2"></i>
+                                    Filter
+                                </button>
+                                <button id="report-sc-download-button" disabled class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                                    <i data-feather="download" class="w-4 h-4 mr-2"></i>
+                                    Unduh
+                                </button>
+                            </div>
+                        </div>
+                
+                        <!-- Data Table -->
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hotel</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cash Collection</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total AR Collection</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Collection</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Dokumen</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="report-sc-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                            <div class="flex flex-col items-center">
+                                                <i data-feather="search" class="w-12 h-12 text-gray-400 mb-4"></i>
+                                                <span class="font-medium">Silakan gunakan filter untuk menampilkan data.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot id="report-sc-table-foot" class="bg-gray-50 font-semibold">
+                                    <!-- Totals will be rendered here by JS -->
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Konten SOP Aplikasi -->
+                <section id="sop-aplikasi" class="content-section hidden p-6">
+                    <div class="bg-white p-8 rounded-lg shadow-md space-y-12 prose max-w-none">
+                        <div class="text-center border-b pb-4">
+                            <h2 class="text-3xl font-bold text-gray-800">Standar Operasional Prosedur (SOP)</h2>
+                            <p class="text-xl font-semibold text-gray-600">Aplikasi KPI Accounting</p>
+                        </div>
+                
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-700 mb-4">1. Pendahuluan</h3>
+                            <p class="text-justify">Selamat datang di panduan penggunaan Aplikasi KPI Accounting. Dokumen ini dirancang untuk menjadi sumber informasi utama bagi semua pengguna, mulai dari staf hotel, auditor, hingga administrator sistem. Tujuan dari SOP ini adalah untuk memastikan bahwa setiap pengguna dapat mengoperasikan aplikasi secara efisien, konsisten, dan aman. Dengan mengikuti panduan ini, kita dapat menjaga integritas dan akurasi data yang merupakan aset penting bagi perusahaan.</p>
+                        </div>
+                
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-700 mb-4">2. Penjelasan Modul Aplikasi</h3>
+                            <p class="text-justify">Aplikasi ini terbagi menjadi beberapa modul utama yang dapat diakses melalui menu di sisi kiri (sidebar). Setiap modul memiliki fungsi spesifik untuk mendukung alur kerja akuntansi dan audit.</p>
+                            
+                            <h4 class="mt-6 font-bold">2.1 Dashboard</h4>
+                            <p class="text-justify">Dashboard adalah halaman pertama yang Anda lihat setelah login. Halaman ini berfungsi sebagai pusat komando Anda, menyajikan data-data terpenting dalam format visual yang mudah dipahami. Di sini Anda dapat memantau metrik audit secara real-time, melihat ringkasan status audit dalam bentuk grafik, serta melacak status pengiriman laporan dari semua hotel. Gunakan fitur filter pada tabel status untuk fokus pada hotel, jenis laporan, atau status tertentu (Tepat Waktu, Menunggu, Terlambat) yang memerlukan perhatian Anda.</p>
+                
+                            <h4 class="mt-6 font-bold">2.2 Agenda & Kalender</h4>
+                            <p class="text-justify">Modul ini membantu dalam penjadwalan dan pengelolaan visitasi audit. <strong>Agenda Visit Audit</strong> menyajikan semua jadwal dalam format tabel yang rinci, cocok untuk melihat daftar pekerjaan. Sementara itu, <strong>Calendar</strong> menyajikan jadwal dalam format kalender bulanan atau mingguan yang interaktif, memudahkan Anda melihat gambaran besar dan menambah agenda baru dengan cepat hanya dengan mengklik pada tanggal yang diinginkan.</p>
+                
+                            <h4 class="mt-6 font-bold">2.3 Submit Report</h4>
+                            <p class="text-justify">Ini adalah modul sentral untuk semua aktivitas pengiriman laporan. Terdapat dua metode utama pengiriman data:</p>
+                            <ul>
+                                <li><strong>Laporan berbasis Excel:</strong> Untuk laporan seperti Income Audit, AR/AP Aging, dan SOH, Anda diwajibkan untuk mengunduh template yang telah disediakan, mengisinya dengan data yang akurat, lalu mengunggahnya kembali ke sistem.</li>
+                                <li><strong>Laporan berbasis Formulir:</strong> Untuk laporan seperti Service Charge dan After Closing GL, Anda dapat mengisi data secara langsung pada formulir interaktif yang tersedia di halaman.</li>
+                            </ul>
+                
+                            <h4 class="mt-6 font-bold">2.4 Reports</h4>
+                            <p class="text-justify">Modul Laporan adalah pusat analisis data Anda. Di sini, semua data yang telah dikirimkan dikumpulkan, diolah, dan disajikan dalam format yang mudah dianalisis. Anda dapat melihat ringkasan performa, membandingkan data antar periode, dan mengunduh hasil analisis dalam format Excel untuk keperluan pelaporan lebih lanjut. Fitur seperti <strong>Performa Hotel</strong> memberikan visualisasi grafik yang modern untuk memantau kepatuhan pengiriman laporan per hotel.</p>
+                
+                            <h4 class="mt-6 font-bold">2.5 Settings (Khusus Administrator)</h4>
+                            <p class="text-justify">Modul ini adalah area administrasi sistem. Hanya pengguna dengan peran Administrator yang dapat mengaksesnya. Dari sini, Anda dapat mengelola seluruh konfigurasi aplikasi, termasuk:</p>
+                            <ul>
+                                <li><strong>Manajemen Pengguna:</strong> Membuat, mengubah, dan menghapus akun pengguna serta mengatur akses hotel untuk setiap pengguna.</li>
+                                <li><strong>Manajemen Data Master:</strong> Mengelola daftar hotel, tipe audit, dan item-item checklist yang menjadi dasar operasional audit.</li>
+                                <li><strong>Manajemen Peran & Hak Akses:</strong> Mendefinisikan peran (seperti 'Admin', 'Auditor') dan memberikan izin spesifik untuk setiap fitur di dalam aplikasi.</li>
+                                <li><strong>Manajemen Target:</strong> Mengatur batas waktu (deadline) untuk setiap jenis laporan, yang menjadi acuan untuk status 'Tepat Waktu' atau 'Terlambat'.</li>
+                            </ul>
+                        </div>
+                
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-700 mb-4">3. Prosedur Kerja Detail</h3>
+                            
+                            <h4 class="font-bold">3.1 Cara Mengirim Laporan (via Excel)</h4>
+                            <p class="text-justify">Mengirim laporan menggunakan file Excel adalah salah satu tugas paling umum. Ikuti langkah-langkah berikut untuk memastikan data Anda terkirim dengan benar:</p>
+                            <ol>
+                                <li>Navigasi ke menu <strong>Submit Report</strong>, lalu pilih jenis laporan yang ingin Anda kirim (misalnya, "Income Audit Daily").</li>
+                                <li>Di halaman submit, selalu unduh template terbaru dengan mengklik tombol <strong>"Unduh Template"</strong>. Ini penting untuk memastikan Anda menggunakan format yang benar.</li>
+                                <li>Buka file template dan isi dengan data yang akurat. <strong>Peringatan:</strong> Jangan pernah mengubah, menghapus, atau mengganti nama kolom (header) pada file template.</li>
+                                <li>Setelah selesai, kembali ke aplikasi. Pilih <strong>Hotel</strong> dan <strong>Tanggal Laporan</strong> yang sesuai.</li>
+                                <li>Klik tombol <strong>"Pilih File Excel"</strong> dan unggah file yang sudah diisi.</li>
+                                <li>Sistem akan menampilkan pratinjau data dari file Anda dalam sebuah tabel. Lakukan verifikasi akhir untuk memastikan semua data terbaca dengan benar.</li>
+                                <li>Jika semua sudah sesuai, klik tombol <strong>"Simpan ke Database"</strong> untuk menyelesaikan proses.</li>
+                            </ol>
+                
+                            <h4 class="mt-6 font-bold">3.2 Cara Menghapus Data Laporan</h4>
+                            <p class="text-red-600 font-semibold text-justify">PERINGATAN: Prosedur ini bersifat permanen dan data yang telah dihapus tidak dapat dikembalikan. Lakukan dengan sangat hati-hati dan hanya jika mutlak diperlukan, misalnya jika terjadi kesalahan pengiriman data ganda.</p>
+                            <ol>
+                                <li>Masuk ke halaman <strong>Submit Report</strong> yang relevan (misalnya, "Income Audit Daily").</li>
+                                <li>Gulir ke bagian bawah halaman hingga menemukan area berjudul <strong>"Area Berbahaya: Hapus Laporan"</strong>.</li>
+                                <li>Pilih <strong>Hotel</strong> dan tentukan <strong>Rentang Tanggal</strong> dari laporan yang ingin Anda hapus.</li>
+                                <li>Klik tombol <strong>"Hapus Laporan"</strong>.</li>
+                                <li>Sebuah jendela konfirmasi akan muncul untuk memastikan tindakan Anda. Baca pesan konfirmasi dengan saksama sebelum menyetujuinya.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Footer -->
+            <footer class="text-center p-4 text-sm text-gray-500 bg-gray-100 border-t border-gray-200">
+                © 2025 KPI Accounting. All Rights Reserved.
+            </footer>
+
+            <!-- Change Password Modal -->
+            <div id="change-password-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <p class="text-2xl font-bold">Ganti Password</p>
+                        <button id="close-change-password-modal-button" class="cursor-pointer z-50">
+                            <i data-feather="x" class="w-6 h-6 text-gray-500"></i>
+                        </button>
+                    </div>
+                    <div class="mt-5">
+                        <form id="change-password-form">
+                            <div class="mb-4">
+                                <label for="current-password" class="block text-gray-700 text-sm font-bold mb-2">Password Saat Ini</label>
+                                <input type="password" id="current-password" name="currentPassword" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            <div class="mb-4">
+                                <label for="new-password" class="block text-gray-700 text-sm font-bold mb-2">Password Baru</label>
+                                <input type="password" id="new-password" name="newPassword" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            <div class="mb-6">
+                                <label for="confirm-password" class="block text-gray-700 text-sm font-bold mb-2">Konfirmasi Password Baru</label>
+                                <input type="password" id="confirm-password" name="confirmPassword" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    Simpan Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit User Modal -->
+            <div id="edit-user-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <p id="edit-user-modal-title" class="text-2xl font-bold">Edit Pengguna</p>
+                        <button id="close-edit-user-modal-button" class="cursor-pointer z-50">
+                            <i data-feather="x" class="w-6 h-6 text-gray-500"></i>
+                        </button>
+                    </div>
+                    <div class="mt-5">
+                        <form id="edit-user-form">
+                            <input type="hidden" id="edit-user-id" name="id">
+                            <div class="mb-4">
+                                <label for="edit-username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                                <input type="text" id="edit-username" name="username" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            <div class="mb-4">
+                                <label for="edit-full_name" class="block text-gray-700 text-sm font-bold mb-2">Nama Lengkap</label>
+                                <input type="text" id="edit-full_name" name="full_name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            <div class="mb-4">
+                                <label for="edit-email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                                <input type="email" id="edit-email" name="email" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            <div class="mb-4">
+                                <label for="edit-password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                                <input type="password" id="edit-password" name="password" placeholder="Kosongkan jika tidak diubah" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            <div class="mb-6">
+                                <label for="edit-role_id" class="block text-gray-700 text-sm font-bold mb-2">Role</label>
+                                <select id="edit-role_id" name="role_id" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                    <!-- Opsi akan diisi oleh JavaScript -->
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit Hotel Modal -->
+            <div id="hotel-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <p id="hotel-modal-title" class="text-2xl font-bold">Tambah Hotel</p>
+                        <button id="close-hotel-modal-button" class="cursor-pointer z-50">
+                            <i data-feather="x" class="w-6 h-6 text-gray-500"></i>
+                        </button>
+                    </div>
+                    <div class="mt-5">
+                        <form id="hotel-form">
+                            <input type="hidden" id="hotel-id" name="id">
+                            <div class="mb-4">
+                                <label for="hotel-name" class="block text-gray-700 text-sm font-bold mb-2">Nama Hotel</label>
+                                <input type="text" id="hotel-name" name="name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>
+                            <div class="mb-6">
+                                <label for="hotel-address" class="block text-gray-700 text-sm font-bold mb-2">Alamat</label>
+                                <textarea id="hotel-address" name="address" rows="3" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    Simpan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Event Modal -->
+            <div id="add-event-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <p id="event-modal-title" class="text-2xl font-bold">Tambah Agenda Baru</p>
+                        <button id="close-event-modal-button" class="cursor-pointer z-50">
+                            <i data-feather="x" class="w-6 h-6 text-gray-500"></i>
+                        </button>
+                    </div>
+                    <div class="mt-5">
+                        <form id="add-event-form">
+                            <input type="hidden" id="event-id" name="id">
+                            <div class="mb-4">
+                                <label for="event-hotel-id" class="block text-gray-700 text-sm font-bold mb-2">Pilih Hotel</label>
+                                <select id="event-hotel-id" name="hotel_id" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                    <option value="">Memuat hotel...</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="add-event-audit-type" class="block text-gray-700 text-sm font-bold mb-2">Tipe Audit</label>
+                                <select id="add-event-audit-type" name="audit_type_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                    <!-- Opsi akan diisi oleh JavaScript -->
+                                    <option value="">Memuat tipe audit...</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label for="event-start" class="block text-gray-700 text-sm font-bold mb-2">Tanggal Mulai</label>
+                                    <input type="date" id="event-start" name="start_date" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div>
+                                    <label for="event-start-time" class="block text-gray-700 text-sm font-bold mb-2">Jam Mulai</label>
+                                    <input type="time" id="event-start-time" name="start_time" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="09:00">
+                                </div>
+                                <div>
+                                    <label for="event-end" class="block text-gray-700 text-sm font-bold mb-2">Tanggal Selesai</label>
+                                    <input type="date" id="event-end" name="end_date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div>
+                                    <label for="event-end-time" class="block text-gray-700 text-sm font-bold mb-2">Jam Selesai (Opsional)</label>
+                                    <input type="time" id="event-end-time" name="end_time" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="17:00">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="event-description" class="block text-gray-700 text-sm font-bold mb-2">Deskripsi</label>
+                                <textarea id="event-description" name="description" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                            </div>
+                            <div class="mb-6">
+                                <label for="event-status" class="block text-gray-700 text-sm font-bold mb-2">Status Audit</label>
+                                <select id="event-status" name="status" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                    <option value="Terjadwal">Audit Terjadwal</option>
+                                    <option value="Sedang Proses">Sedang Proses Audit</option>
+                                    <option value="Selesai">Selesai diaudit</option>
+                                    <option value="Dibatalkan">Dibatalkan</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-end pt-4 space-x-4">
+                                <button id="checklist-agenda-button" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline hidden items-center">
+                                    <i data-feather="check-square" class="w-4 h-4 mr-2 inline-block"></i>Checklist
+                                </button>
+                                <button id="delete-event-button" type="button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline hidden">
+                                    Hapus
+                                </button>
+                                <button id="save-event-button" type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                    Simpan Agenda
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+    <!-- MODAL: TAMBAH/EDIT ITEM CHECKLIST                                   -->
+    <!-- =================================================================== -->
+    <div id="audit-checklist-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3">
+                <h3 id="audit-checklist-modal-title" class="text-2xl font-bold text-gray-900">Tambah Item Checklist</h3>
+                <button id="close-audit-checklist-modal-button" class="cursor-pointer z-50">
+                    <i data-feather="x" class="w-6 h-6 text-gray-500 hover:text-gray-800"></i>
+                </button>
+            </div>
+            <form id="audit-checklist-form" class="space-y-4">
+                <input type="hidden" id="checklist-item-id" name="id">
+                <input type="hidden" id="checklist-audit-type-id" name="audit_type_id">
+                <div>
+                    <label for="checklist-item-category" class="block text-sm font-medium text-gray-700">Kategori (Opsional)</label>
+                    <input type="text" id="checklist-item-category" name="category" placeholder="Contoh: Front Office, Kamar, F&B" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="checklist-item-text" class="block text-sm font-medium text-gray-700">Item / Pertanyaan Checklist</label>
+                    <textarea id="checklist-item-text" name="item_text" required rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                </div>
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Simpan Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+            <!-- =================================================================== -->
+            <!-- MODAL: TAMBAH/EDIT TIPE AUDIT                                       -->
+            <!-- =================================================================== -->
+            <div id="audit-type-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50">
+                <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center pb-3">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="audit-type-modal-title">Edit Tipe Audit</h3>
+                        <button id="close-audit-type-modal-button" class="cursor-pointer z-50">
+                            <i data-feather="x" class="w-6 h-6 text-gray-400 hover:text-gray-600"></i>
+                        </button>
+                    </div>
+                    <div class="mt-3">
+                        <form id="audit-type-form" class="mt-4 space-y-4">
+                            <input type="hidden" id="audit-type-id" name="id">
+                            <div>
+                                <label for="audit-type-name" class="block text-sm font-medium text-gray-700 text-left">Nama Tipe Audit</label>
+                                <input type="text" name="name" id="audit-type-name" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                            </div>
+                            <div class="items-center px-4 py-3">
+                                <button id="save-audit-type-button" type="submit" class="px-4 py-2 bg-indigo-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    Simpan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- MODAL: VIEW CHECKLIST FOR AGENDA                                    -->
+            <!-- =================================================================== -->
+            <div id="checklist-view-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50">
+                <div class="relative mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="checklist-view-modal-title">Checklist Audit</h3>
+                        <button id="close-checklist-view-modal-button" class="cursor-pointer z-50">
+                            <i data-feather="x" class="w-6 h-6 text-gray-400 hover:text-gray-600"></i>
+                        </button>
+                    </div>
+                    <form id="checklist-results-form">
+                        <div id="checklist-view-container" class="mt-4 max-h-[60vh] overflow-y-auto">
+                            <!-- Checklist items will be rendered here by JavaScript -->
+                            <p class="text-gray-500">Memuat checklist...</p>
+                        </div>
+                    </form>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse items-center -m-5 mt-5 rounded-b-md">
+                        <button id="save-checklist-results-button" type="submit" form="checklist-results-form" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Simpan Hasil Audit
+                        </button>
+                        <!-- Tombol proses audit dikembalikan -->
+                        <div class="mt-3 sm:mt-0 mr-auto space-x-2">
+                            <button id="start-audit-button" class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-500 text-base font-medium text-white hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 sm:text-sm">
+                                Mulai Audit
+                            </button>
+                            <button id="finish-audit-button" class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-500 text-base font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400 sm:text-sm">
+                                Selesaikan Audit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal untuk Kelola Hak Akses Peran -->
+            <div id="permissions-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center pb-3">
+                        <h3 id="permissions-modal-title" class="text-2xl font-bold">Kelola Hak Akses</h3>
+                        <button id="close-permissions-modal-button" class="cursor-pointer z-50">
+                            <i data-feather="x" class="w-6 h-6 text-gray-500"></i>
+                        </button>
+                    </div>
+                    <form id="permissions-form">
+                        <input type="hidden" id="permissions-role-id">
+                        <div id="permissions-checklist" class="mt-4 max-h-96 overflow-y-auto space-y-2 border-t border-b py-4">
+                            <!-- Checklist hak akses akan dimuat di sini oleh JavaScript -->
+                            <p class="text-gray-500">Memuat hak akses...</p>
+                        </div>
+                        <div class="flex items-center justify-end mt-6">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- MODAL: DETAIL LAPORAN SOH INVENTORY                               -->
+            <!-- =================================================================== -->
+            <div id="soh-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                <div class="relative top-10 mx-auto p-5 border w-full max-w-7xl shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <h3 id="soh-detail-modal-title" class="text-2xl font-bold text-gray-900">Detail Laporan SOH</h3>
+                        <button id="close-soh-detail-modal-button" class="cursor-pointer z-50">
+                            <i data-feather="x" class="w-6 h-6 text-gray-500 hover:text-gray-800"></i>
+                        </button>
+                    </div>
+                    <div class="mt-4 max-h-[75vh] overflow-y-auto">
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Date</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Storage</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Article</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Description</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Unit</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actual Qty</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actual Value</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Act P-Price</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Avrg Price</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Sub Group</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="soh-detail-table-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- Detail data will be rendered here -->
+                                </tbody>
+                                <tfoot id="soh-detail-table-foot" class="bg-gray-100 font-semibold sticky bottom-0">
+                                    <!-- Total will be rendered here -->
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-4">
+                        <button id="download-soh-detail-button" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                            <i data-feather="download" class="w-5 h-5 mr-2 inline-block"></i>
+                            Unduh Detail
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
