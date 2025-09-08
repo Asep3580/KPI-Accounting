@@ -30,16 +30,20 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // === MIDDLEWARE GLOBAL ===
-// Pastikan URL di sini adalah URL FRONTEND Anda yang sudah di-deploy.
+// Daftar putih untuk development lokal
 const whitelist = [
-    // CONTOH: 'https://kpi-accounting-frontend.onrender.com'
-    process.env.FRONTEND_URL, // URL produksi dari environment variable
     'http://127.0.0.1:5500',   // Untuk development lokal
     'http://localhost:5500' // Untuk development lokal
 ];
+
+// Tambahkan URL frontend dari environment variable jika ada (untuk produksi)
+if (process.env.FRONTEND_URL) {
+    whitelist.push(process.env.FRONTEND_URL);
+}
+
 const corsOptions = {
     origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
+        if (!origin || whitelist.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
