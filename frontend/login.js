@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     // Gunakan variabel yang sama seperti di script.js untuk konsistensi
-    // Ganti URL ini jika backend Anda memiliki alamat yang berbeda.
+    // PERBAIKAN: Sesuaikan dengan URL backend Anda yang sebenarnya dari log Render.
     const API_BASE_URL = 'https://kpi-accounting.onrender.com/api';
 
     if (loginForm) {
@@ -23,16 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (!response.ok) {
-                    // Coba baca error sebagai JSON, jika gagal, baca sebagai teks.
                     let errorMessage = `Terjadi kesalahan server (Status: ${response.status})`;
+                    // PERBAIKAN: Baca body sebagai teks SEKALI saja, karena kita tidak tahu formatnya.
+                    const errorText = await response.text();
                     try {
-                        const errorData = await response.json();
+                        // Coba parse teks tersebut sebagai JSON.
+                        const errorData = JSON.parse(errorText);
                         errorMessage = errorData.message || errorMessage;
-                    } catch (jsonError) {
-                        // Jika respons bukan JSON, itu mungkin halaman error HTML/teks.
-                        const errorText = await response.text();
-                        // Tampilkan pesan yang lebih informatif jika ada teks error.
-                        errorMessage = errorText.substring(0, 150) || errorMessage; // Ambil 150 karakter pertama
+                    } catch (parseError) {
+                        // Jika gagal di-parse, berarti itu bukan JSON. Gunakan teks aslinya.
+                        errorMessage = errorText.substring(0, 150) || errorMessage;
                     }
                     throw new Error(errorMessage);
                 }
@@ -49,5 +49,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-

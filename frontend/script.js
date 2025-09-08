@@ -93,8 +93,8 @@ function hasPermission(permissionName) {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    // Ganti URL ini dengan URL backend Anda di Render.com
-    // Contoh: 'https://nama-proyek-anda.onrender.com/api'
+    // PERBAIKAN: Sesuaikan dengan URL backend Anda yang sebenarnya dari log Render.
+    // URL ini harus sama persis dengan yang ada di login.js
     const API_BASE_URL = 'https://kpi-accounting.onrender.com/api';
 
     // 1. UI Element Selectors
@@ -465,8 +465,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = 'login.html';
                     throw new Error('Akses ditolak atau sesi berakhir.');
                 }
-                const errorData = await response.json().catch(() => ({ message: response.statusText }));
-                throw new Error(errorData.message || `Terjadi kesalahan: ${response.status}`);
+                // Pola penanganan error yang lebih tangguh: baca sebagai teks dulu.
+                let errorMessage;
+                const errorText = await response.text();
+                try {
+                    // Coba parse sebagai JSON
+                    const errorData = JSON.parse(errorText);
+                    errorMessage = errorData.message || `Terjadi kesalahan: ${response.status}`;
+                } catch (e) {
+                    // Jika gagal, gunakan teks error mentah (misalnya dari halaman error HTML)
+                    errorMessage = errorText.substring(0, 200) || `Terjadi kesalahan: ${response.status}`;
+                }
+                throw new Error(errorMessage);
             }
 
             // Handle respons tanpa konten seperti pada method DELETE
@@ -518,8 +528,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = 'login.html';
                     throw new Error('Akses ditolak atau sesi berakhir.');
                 }
-                const errorData = await response.json().catch(() => ({ message: response.statusText }));
-                throw new Error(errorData.message || `Terjadi kesalahan: ${response.status}`);
+                // Menggunakan pola penanganan error yang sama dengan apiFetch
+                let errorMessage;
+                const errorText = await response.text();
+                try {
+                    const errorData = JSON.parse(errorText);
+                    errorMessage = errorData.message || `Terjadi kesalahan: ${response.status}`;
+                } catch (e) {
+                    errorMessage = errorText.substring(0, 200) || `Terjadi kesalahan: ${response.status}`;
+                }
+                throw new Error(errorMessage);
             }
             return response.json();
         } catch (error) {
@@ -5897,5 +5915,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
     init().catch(err => console.error("Inisialisasi aplikasi gagal:", err));
 });
-
-
