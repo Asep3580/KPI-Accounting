@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
+    // Gunakan variabel yang sama seperti di script.js untuk konsistensi
+    // Ganti URL ini jika backend Anda memiliki alamat yang berbeda.
+    const API_BASE_URL = 'https://kpi-accounting.backend.onrender.com/api';
 
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -9,7 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = loginForm.password.value;
 
             try {
-                const response = await fetch('https://kpi-accounting.onrender.com/api/auth/login', {
+                // Gunakan variabel API_BASE_URL
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -27,9 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('authToken', data.token);
                 window.location.href = 'index.html';
             } catch (error) {
-                alert(error.message);
+                // Menangkap error jaringan seperti 'Failed to fetch'
+                if (error instanceof TypeError && error.message === 'Failed to fetch') {
+                   alert('Gagal terhubung ke server. Pastikan backend berjalan dan URL API benar.');
+                } else {
+                   alert(error.message);
+                }
             }
         });
     }
-
 });
