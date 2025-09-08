@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Ganti URL ini dengan URL backend Anda di Render.com
     // Contoh: 'https://nama-proyek-anda.onrender.com/api'
-    const API_BASE_URL = 'https://kpi-accounting-backend.onrender.com/api';
+    const API_BASE_URL = 'https://kpi-accounting.backend.onrender.com/api';
 
     // 1. UI Element Selectors
     const ui = {
@@ -5897,3 +5897,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     init().catch(err => console.error("Inisialisasi aplikasi gagal:", err));
 });
+
