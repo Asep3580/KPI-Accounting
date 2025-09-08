@@ -30,9 +30,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // === MIDDLEWARE GLOBAL ===
-// Konfigurasi CORS yang lebih aman untuk produksi
+// Pastikan URL di sini adalah URL FRONTEND Anda yang sudah di-deploy.
 const whitelist = [
-    'https://kpi-accounting.vercel.app', // Ganti dengan URL frontend Anda
+    // CONTOH: 'https://kpi-accounting-frontend.onrender.com'
+    process.env.FRONTEND_URL, // Cara terbaik: Gunakan environment variable
     'http://127.0.0.1:5500', // Untuk development lokal
     'http://localhost:5500' // Untuk development lokal
 ];
@@ -90,5 +91,4 @@ app.use(errorHandler); // Menangani semua error lainnya (500)
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-
 
