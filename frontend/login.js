@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     // Gunakan variabel yang sama seperti di script.js untuk konsistensi
     // Ganti URL ini jika backend Anda memiliki alamat yang berbeda.
-    const API_BASE_URL = 'https://kpi-accounting-backend.onrender.com/api';
+    const API_BASE_URL = 'https://kpi-accounting.backend.onrender.com/api';
 
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -49,3 +49,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
