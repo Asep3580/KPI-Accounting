@@ -33,6 +33,7 @@ const PORT = process.env.PORT || 3000;
 // Pastikan URL di sini adalah URL FRONTEND Anda yang sudah di-deploy.
 const whitelist = [
     // CONTOH: 'https://kpi-accounting-frontend.onrender.com'
+    'https://kpi-accounting.vercel.app', // PERBAIKAN: Tambahkan URL frontend Vercel Anda
     process.env.FRONTEND_URL, // Cara terbaik: Gunakan environment variable
     'http://127.0.0.1:5500', // Untuk development lokal
     'http://localhost:5500' // Untuk development lokal
